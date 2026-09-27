@@ -9,7 +9,7 @@ import { useApp } from "@/lib/store";
 
 export default function WorkoutDetailPage() {
   const params = useParams<{ id: string }>();
-  const { addToPlan, addToSaved } = useApp();
+  const { addToPlan, addToSaved, plan } = useApp();
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +21,9 @@ export default function WorkoutDetailPage() {
 
   if (loading) return <p className="text-center text-gray-400 py-20">Loading…</p>;
   if (!workout) return <p className="text-center text-gray-400 py-20">Workout not found.</p>;
+
+  const isFull = plan.length >= 5;
+  const alreadyInPlan = plan.some((p) => p.id === workout.id);
 
   const specs = [
     { label: "EQUIPMENT", value: workout.equipment },
@@ -67,9 +70,15 @@ export default function WorkoutDetailPage() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => addToPlan(workout)}
-            className="bg-accent text-black font-bold px-5 py-3 rounded-md flex items-center gap-2"
+            disabled={isFull || alreadyInPlan}
+            className={`font-bold px-5 py-3 rounded-md flex items-center gap-2 ${
+              isFull || alreadyInPlan
+                ? "bg-white/10 text-gray-500 cursor-not-allowed"
+                : "bg-accent text-black"
+            }`}
           >
-            <Plus size={16} /> Add to today&apos;s plan
+            <Plus size={16} />{" "}
+            {alreadyInPlan ? "Already in Plan" : isFull ? "Plan Full (5/5)" : "Add to today's plan"}
           </button>
           <button
             onClick={() => addToSaved(workout)}
